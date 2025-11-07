@@ -1,67 +1,128 @@
 import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-export default function App() {
-  const products = [
+export default function Shop() {
+  const [products, setProducts] = useState([
     { id: 1, name: "Kawa Ziarnista", price: 39 },
     { id: 2, name: "Herbata Jaśminowa", price: 29 },
     { id: 3, name: "Czekolada 70%", price: 19 }
-  ];
+  ]);
 
   const [cart, setCart] = useState([]);
   const [user, setUser] = useState(null);
-  const [mode, setMode] = useState("login");
-  const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
-  const [show, setShow] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showLogin, setShowLogin] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
 
-  function addToCart(p) {
-    setCart([...cart, p]);
+  function addToCart(item) {
+    setCart([...cart, item]);
   }
 
-  function submit() {
-    if (email && pass) {
-      setUser({ email });
-      setShow(false);
+  function handleLogin() {
+    if (loginEmail && loginPassword) {
+      setUser({ email: loginEmail });
+      setShowLogin(false);
     }
   }
 
   const total = cart.reduce((s, p) => s + p.price, 0);
 
+  function processPayment(method) {
+    setPaymentMethod(method);
+    setShowPayment(true);
+    setCart([]); // symulacja opłacenia koszyka
+  }
+
   return (
-    <div style={{ padding: 20, fontFamily: "sans-serif" }}>
-      <h1>Mój Sklep</h1>
+    <div className="min-h-screen p-8 grid gap-6 bg-neutral-100">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Mój Sklep</h1>
+        {!user ? (
+          <Button onClick={() => setShowLogin(true)} className="rounded-2xl p-2">Zaloguj</Button>
+        ) : (
+          <div className="text-lg flex gap-2">
+            Witaj, {user.email}
+            <Button onClick={() => setShowAdmin(!showAdmin)} className="rounded-2xl p-2">{showAdmin ? "Zamknij panel" : "Panel admina"}</Button>
+          </div>
+        )}
+      </div>
 
-      {!user ? (
-        <button onClick={() => setShow(true)}>Zaloguj</button>
-      ) : (
-        <div>Witaj, {user.email}</div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {products.map(p => (
+          <Card key={p.id} className="shadow-md rounded-2xl">
+            <CardContent className="p-4 grid gap-2">
+              <div className="text-xl font-semibold">{p.name}</div>
+              <div className="text-lg">{p.price} zł</div>
+              <Button onClick={() => addToCart(p)} className="rounded-2xl p-2">Dodaj do koszyka</Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="shadow-md rounded-2xl mt-6">
+        <CardContent className="p-4 grid gap-2">
+          <h2 className="text-2xl font-semibold">Koszyk</h2>
+          {cart.length === 0 && <div>Koszyk jest pusty</div>}
+          {cart.map((item, i) => (
+            <div key={i}>{item.name} — {item.price} zł</div>
+          ))}
+          <div className="font-bold text-xl mt-2">Razem: {total} zł</div>
+          {cart.length > 0 && (
+            <div className="grid gap-2 mt-2">
+              <Button onClick={() => processPayment('PayPal')} className="rounded-2xl p-2">Zapłać PayPal</Button>
+              <Button onClick={() => processPayment('Blik')} className="rounded-2xl p-2">Zapłać Blik</Button>
+              <Button onClick={() => processPayment('Karta')} className="rounded-2xl p-2">Zapłać Kartą</Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {showPayment && (
+        <Card className="shadow-md rounded-2xl p-6 max-w-sm mx-auto mt-6">
+          <CardContent className="grid gap-4">
+            <h2 className="text-xl font-semibold">Płatność zrealizowana</h2>
+            <div>Wybrana metoda: {paymentMethod}</div>
+            <Button onClick={() => setShowPayment(false)} className="rounded-2xl p-2 mt-2">OK</Button>
+          </CardContent>
+        </Card>
       )}
 
-      <h2>Produkty</h2>
-      {products.map(p => (
-        <div key={p.id} style={{ marginBottom: 10 }}>
-          {p.name} - {p.price} zł
-          <button onClick={() => addToCart(p)} style={{ marginLeft: 10 }}>
-            Dodaj
-          </button>
-        </div>
-      ))}
-
-      <h2>Koszyk</h2>
-      {cart.length === 0 && <div>Pusty</div>}
-      {cart.map((i, k) => (
-        <div key={k}>{i.name} — {i.price} zł</div>
-      ))}
-      <strong>Razem: {total} zł</strong>
-
-      {show && (
-        <div style={{ marginTop: 20, padding: 10, border: "1px solid #999" }}>
-          <h3>{mode === "login" ? "Logowanie" : "Rejestracja"}</h3>
-          <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} /><br/>
-          <input placeholder="Hasło" type="password" value={pass} onChange={e => setPass(e.target.value)} /><br/>
-          <button onClick={submit}>OK</button>
-        </div>
+      {showLogin && (
+        <Card className="shadow-md rounded-2xl p-6 max-w-sm mx-auto mt-6">
+          <CardContent className="grid gap-4">
+            <h2 className="text-xl font-semibold">Logowanie</h2>
+            <input className="p-2 rounded border" placeholder="Email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} />
+            <input className="p-2 rounded border" placeholder="Hasło" type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} />
+            <Button onClick={handleLogin} className="rounded-2xl p-2">Zaloguj</Button>
+          </CardContent>
+        </Card>
       )}
+
+      {showAdmin && (
+        <Card className="shadow-md rounded-2xl p-6 mt-6">
+          <CardContent className="grid gap-4">
+            <h2 className="text-2xl font-semibold">Panel administratora</h2>
+            <form className="grid gap-2" onSubmit={e => {
+              e.preventDefault();
+              const name = e.target.name.value;
+              const price = Number(e.target.price.value);
+              if(name && price){
+                setProducts([...products, { id: Date.now(), name, price }]);
+                e.target.reset();
+              }
+            }}>
+              <input className="p-2 rounded border" name="name" placeholder="Nazwa produktu" />
+              <input className="p-2 rounded border" name="price" placeholder="Cena" type="number" />
+              <Button type="submit" className="rounded-2xl p-2">Dodaj produkt</Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }
