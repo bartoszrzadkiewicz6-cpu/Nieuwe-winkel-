@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 
 export default function Shop() {
   const [products, setProducts] = useState([
-    { id: 1, name: "Kawa Ziarnista", price: 39 },
-    { id: 2, name: "Herbata Jaśminowa", price: 29 },
-    { id: 3, name: "Czekolada 70%", price: 19 }
+    { id: 1, name: "off white", price: 39 },
+    { id: 2, name: "Dior", price: 29 },
+    { id: 3, name: "LV", price: 19 }
   ]);
 
   const [cart, setCart] = useState([]);
